@@ -16,7 +16,26 @@ import Assessments from './pages/Assessments';
 import Communications from './pages/Communications';
 import Notifications from './pages/Notifications';
 import AISummaries from './pages/AISummaries';
+import AITools from './pages/AITools';
+import AINewTools from './pages/AINewTools';
+import CustomViewsPage from './pages/CustomViewsPage';
 import { notifications as notifApi } from './services/api';
+
+// // === Batch 02 Gaps & Frontend Mounts ===
+import CfPredictiveRiskEscalation from './pages/CfPredictiveRiskEscalation';
+import CfOptimalServiceMatching from './pages/CfOptimalServiceMatching';
+import CfCaseworkerWorkloadBalancing from './pages/CfCaseworkerWorkloadBalancing';
+import CfGoalAchievementPrediction from './pages/CfGoalAchievementPrediction';
+import CfEarlyInterventionTargeting from './pages/CfEarlyInterventionTargeting';
+import GapBeneficiariesGoalsReferralsLackAiEndpointsForRiskPre from './pages/GapBeneficiariesGoalsReferralsLackAiEndpointsForRiskPre';
+import GapCommunicationsLacksGenerateCommunicationPlan from './pages/GapCommunicationsLacksGenerateCommunicationPlan';
+import GapServicesdirectoryLacksAiMatchingEligibilityScoring from './pages/GapServicesdirectoryLacksAiMatchingEligibilityScoring';
+import GapLimitedIntegrationWithSocialServiceDatabasesOnlyStub from './pages/GapLimitedIntegrationWithSocialServiceDatabasesOnlyStub';
+import GapNoAutomatedEligibilityDeterminationEngine from './pages/GapNoAutomatedEligibilityDeterminationEngine';
+import GapNoFerpaHipaaComplianceTrackingModule from './pages/GapNoFerpaHipaaComplianceTrackingModule';
+import GapLimitedMobileAppForFieldCaseManagers from './pages/GapLimitedMobileAppForFieldCaseManagers';
+import GapNoWebhooks from './pages/GapNoWebhooks';
+import GapNoCalendarIntegrationDespiteAppointments from './pages/GapNoCalendarIntegrationDespiteAppointments';
 
 function Layout({ children, user, onLogout }) {
   const location = useLocation();
@@ -46,6 +65,9 @@ function Layout({ children, user, onLogout }) {
     { path: '/assessments', label: 'Assessments', icon: '📊' },
     { path: '/communications', label: 'Communications', icon: '💬' },
     { path: '/ai-summaries', label: 'AI Summaries', icon: '🤖' },
+    { path: '/ai-tools', label: 'AI Tools', icon: '⚙️' },
+    { path: '/ai-new-tools', label: 'AI New Tools', icon: '✨' },
+    { path: '/custom-views', label: 'Case Views', icon: '🗂️' },
     { path: '/notifications', label: 'Notifications', icon: '🔔', badge: unreadCount },
   ];
 
@@ -167,7 +189,23 @@ function App() {
       <Router>
         <Routes>
           <Route path="*" element={<Login onLogin={handleLogin} />} />
-        </Routes>
+        
+        {/* // === Batch 02 Gaps & Frontend Mounts === */}
+        <Route path="/cf/predictive-risk-escalation" element={<CfPredictiveRiskEscalation />} />
+        <Route path="/cf/optimal-service-matching" element={<CfOptimalServiceMatching />} />
+        <Route path="/cf/caseworker-workload-balancing" element={<CfCaseworkerWorkloadBalancing />} />
+        <Route path="/cf/goal-achievement-prediction" element={<CfGoalAchievementPrediction />} />
+        <Route path="/cf/early-intervention-targeting" element={<CfEarlyInterventionTargeting />} />
+        <Route path="/gap/beneficiaries-goals-referrals-lack-ai-endpoints-for-risk-pre" element={<GapBeneficiariesGoalsReferralsLackAiEndpointsForRiskPre />} />
+        <Route path="/gap/communications-lacks-generate-communication-plan" element={<GapCommunicationsLacksGenerateCommunicationPlan />} />
+        <Route path="/gap/servicesdirectory-lacks-ai-matching-eligibility-scoring" element={<GapServicesdirectoryLacksAiMatchingEligibilityScoring />} />
+        <Route path="/gap/limited-integration-with-social-service-databases-only-stub" element={<GapLimitedIntegrationWithSocialServiceDatabasesOnlyStub />} />
+        <Route path="/gap/no-automated-eligibility-determination-engine" element={<GapNoAutomatedEligibilityDeterminationEngine />} />
+        <Route path="/gap/no-ferpa-hipaa-compliance-tracking-module" element={<GapNoFerpaHipaaComplianceTrackingModule />} />
+        <Route path="/gap/limited-mobile-app-for-field-case-managers" element={<GapLimitedMobileAppForFieldCaseManagers />} />
+        <Route path="/gap/no-webhooks" element={<GapNoWebhooks />} />
+        <Route path="/gap/no-calendar-integration-despite-appointments" element={<GapNoCalendarIntegrationDespiteAppointments />} />
+      </Routes>
       </Router>
     );
   }
@@ -191,6 +229,9 @@ function App() {
           <Route path="/communications" element={<Communications />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/ai-summaries" element={<AISummaries />} />
+          <Route path="/ai-tools" element={<AITools />} />
+          <Route path="/ai-new-tools" element={<AINewTools />} />
+          <Route path="/custom-views" element={<CustomViewsPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>

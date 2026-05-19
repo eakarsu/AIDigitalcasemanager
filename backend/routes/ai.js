@@ -2,6 +2,7 @@ const router = require('express').Router();
 const fetch = require('node-fetch');
 const { query } = require('../db');
 const auth = require('../middleware/auth');
+const { aiRateLimiter } = require('../middleware/rateLimiter');
 require('dotenv').config({ path: '../../.env' });
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
@@ -16,7 +17,7 @@ const callAI = async (messages) => {
       'X-Title': 'AI Case Manager'
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+      model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3-5-sonnet-20241022',
       messages,
       max_tokens: 2000,
       temperature: 0.7
@@ -32,7 +33,7 @@ const callAI = async (messages) => {
 };
 
 // Generate Action Plan from case notes
-router.post('/generate-action-plan', auth, async (req, res) => {
+router.post('/generate-action-plan', auth, aiRateLimiter, async (req, res) => {
   try {
     const { beneficiary_id, case_note_id } = req.body;
 
@@ -122,7 +123,7 @@ Format the plan in a professional, easy-to-read format. Be specific with actions
 });
 
 // Generate Case Summary
-router.post('/generate-summary', auth, async (req, res) => {
+router.post('/generate-summary', auth, aiRateLimiter, async (req, res) => {
   try {
     const { beneficiary_id } = req.body;
 
@@ -187,7 +188,7 @@ Please provide:
 });
 
 // Generate Risk Assessment
-router.post('/generate-risk-assessment', auth, async (req, res) => {
+router.post('/generate-risk-assessment', auth, aiRateLimiter, async (req, res) => {
   try {
     const { beneficiary_id } = req.body;
 
@@ -228,8 +229,41 @@ Provide:
       VALUES ($1, (SELECT id FROM caseworkers WHERE user_id = $2 LIMIT 1), 'risk_assessment', $3, $4, $5)
     `, [beneficiary_id, req.user.id, content, process.env.OPENROUTER_MODEL, 'Risk assessment generation']);
 
+    // Parse risk level from AI response and write back to beneficiary
+    const riskMatch = content.match(/\bOverall Risk Level[:\s]+\*{0,2}(Critical|High|Medium|Low)\b/i)
+      || content.match(/\b(Critical|High|Medium|Low)\s+Risk\b/i)
+      || content.match(/Risk Level[:\s]+\*{0,2}(Critical|High|Medium|Low)\b/i);
+    const parsedRiskLevel = riskMatch ? riskMatch[1].toLowerCase() : null;
+
+    if (parsedRiskLevel) {
+      await query(
+        'UPDATE beneficiaries SET risk_level = $1, updated_at = NOW() WHERE id = $2',
+        [parsedRiskLevel, beneficiary_id]
+      );
+
+      // Create notification for caseworker if risk is Critical or High
+      if (parsedRiskLevel === 'critical' || parsedRiskLevel === 'high') {
+        const caseworkerResult = await query(
+          'SELECT id FROM caseworkers WHERE user_id = $1 LIMIT 1',
+          [req.user.id]
+        );
+        if (caseworkerResult.rows.length > 0) {
+          await query(`
+            INSERT INTO notifications (user_id, title, message, notification_type, related_id, related_entity)
+            VALUES ($1, $2, $3, 'alert', $4, 'beneficiary')
+          `, [
+            req.user.id,
+            `${parsedRiskLevel.charAt(0).toUpperCase() + parsedRiskLevel.slice(1)} Risk Alert`,
+            `AI risk assessment has classified beneficiary #${beneficiary_id} as ${parsedRiskLevel} risk. Immediate review recommended.`,
+            beneficiary_id
+          ]);
+        }
+      }
+    }
+
     res.json({
       assessment: content,
+      risk_level_applied: parsedRiskLevel,
       ai_response: {
         content,
         model: aiResponse.model,
@@ -242,7 +276,7 @@ Provide:
 });
 
 // Generate meeting notes summary
-router.post('/summarize-notes', auth, async (req, res) => {
+router.post('/summarize-notes', auth, aiRateLimiter, async (req, res) => {
   try {
     const { notes_text, beneficiary_id } = req.body;
 

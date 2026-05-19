@@ -367,6 +367,23 @@ const seed = async () => {
     `);
     console.log('Seeded 16 AI summaries');
 
+    // Services Directory (used by AI Referral Matcher)
+    await client.query(`
+      INSERT INTO services_directory (name, service_type, description, eligibility, contact_info, location, is_active) VALUES
+      ('City Housing Authority', 'housing', 'Subsidized housing assistance for low-income families and individuals.', 'Income < 50% AMI; family or single', 'housing@city.gov | (555) 100-2000', 'City Hall, 100 Main St', true),
+      ('Hope Mental Health Clinic', 'mental_health', 'Outpatient counseling, psychiatry, and crisis intervention.', 'Adults 18+, sliding-scale fees', 'intake@hopeclinic.org | (555) 100-2100', '500 Oak Ave', true),
+      ('Veterans Care Coordination', 'veterans', 'Comprehensive support for veterans: PTSD treatment, benefits navigation, housing.', 'Honorably discharged veterans', 'vacare@va.gov | (555) 100-2200', '750 Liberty Blvd', true),
+      ('Family Justice Center', 'domestic_violence', 'Wraparound services for domestic violence survivors: safety planning, legal aid, housing.', 'DV survivors and their dependents', 'help@fjc.org | (555) 100-2300', '900 Justice Way', true),
+      ('Senior Wellness Network', 'senior_services', 'Home health, meals, transportation, and social engagement for seniors.', 'Adults 60+', 'info@seniorwell.org | (555) 100-2400', '1200 Elder St', true),
+      ('Financial Coaching Center', 'financial', 'Free debt counseling, budgeting workshops, and financial literacy training.', 'Open to all residents', 'coach@finhelp.org | (555) 100-2500', '50 Bank Plaza', true),
+      ('SNAP / Food Assistance', 'food', 'SNAP enrollment and emergency food pantry referrals.', 'Income-eligible households', 'snap@city.gov | (555) 100-2600', 'County Services Bldg', true),
+      ('Substance Use Recovery Center', 'substance_use', 'Detox, outpatient counseling, MAT, and 12-step support.', 'Adults seeking recovery support', 'admit@recovery.org | (555) 100-2700', '300 Recovery Rd', true),
+      ('Workforce Development Hub', 'employment', 'Job training, resume help, and employer connections.', 'Unemployed or underemployed', 'jobs@workhub.org | (555) 100-2800', '600 Industry Pkwy', true),
+      ('Children & Youth Services', 'youth', 'After-school programs, mentorship, and crisis support for minors.', 'Youth ages 6-18', 'youth@cyservices.org | (555) 100-2900', '400 School Ln', true)
+      ON CONFLICT DO NOTHING;
+    `);
+    console.log('Seeded 10 services directory entries');
+
     console.log('\n✅ Database seeded successfully with all data!');
     console.log('📊 Summary:');
     console.log('   - 16 Users');

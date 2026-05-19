@@ -1,9 +1,17 @@
 const router = require('express').Router();
 const { query } = require('../db');
 const auth = require('../middleware/auth');
+const { hipaaAuditLog } = require('../middleware/hipaaAudit');
 
 router.get('/', auth, async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+
+    const countResult = await query('SELECT COUNT(*) FROM beneficiaries');
+    const total = parseInt(countResult.rows[0].count);
+
     const result = await query(`
       SELECT b.*,
         u.full_name as caseworker_name,
@@ -12,14 +20,24 @@ router.get('/', auth, async (req, res) => {
       LEFT JOIN caseworkers cw ON b.assigned_caseworker_id = cw.id
       LEFT JOIN users u ON cw.user_id = u.id
       ORDER BY b.created_at DESC
-    `);
-    res.json(result.rows);
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
+
+    res.json({
+      data: result.rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, hipaaAuditLog, async (req, res) => {
   try {
     const result = await query(`
       SELECT b.*,
@@ -41,6 +59,15 @@ router.post('/', auth, async (req, res) => {
   try {
     const { first_name, last_name, email, phone, date_of_birth, address, city, state, zip_code,
             emergency_contact, emergency_phone, status, risk_level, assigned_caseworker_id, program, notes } = req.body;
+
+    // Input validation
+    const errors = [];
+    if (!first_name || !first_name.trim()) errors.push('first_name is required');
+    if (!last_name || !last_name.trim()) errors.push('last_name is required');
+    if (!status && status !== undefined) errors.push('status must be a non-empty string if provided');
+    const validStatuses = ['active', 'inactive', 'closed', 'pending'];
+    if (status && !validStatuses.includes(status)) errors.push(`status must be one of: ${validStatuses.join(', ')}`);
+    if (errors.length > 0) return res.status(400).json({ error: 'Validation failed', details: errors });
     const result = await query(`
       INSERT INTO beneficiaries (first_name, last_name, email, phone, date_of_birth, address, city, state, zip_code,
         emergency_contact, emergency_phone, status, risk_level, assigned_caseworker_id, program, notes)

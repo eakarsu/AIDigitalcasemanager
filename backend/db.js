@@ -221,6 +221,29 @@ const initDB = async () => {
         prompt_used TEXT,
         created_at TIMESTAMP DEFAULT NOW()
       );
+
+      CREATE TABLE IF NOT EXISTS access_logs (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE SET NULL,
+        endpoint VARCHAR(255) NOT NULL,
+        action VARCHAR(100) NOT NULL,
+        ip_address VARCHAR(45),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS services_directory (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        service_type VARCHAR(100) NOT NULL,
+        description TEXT,
+        eligibility TEXT,
+        contact_info VARCHAR(500),
+        location VARCHAR(255),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
     `);
     console.log('Database tables initialized successfully');
   } catch (err) {

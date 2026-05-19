@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = 'http://localhost:3801/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -132,6 +132,18 @@ export const ai = {
   generateRiskAssessment: (data) => api.post('/ai/generate-risk-assessment', data),
   summarizeNotes: (data) => api.post('/ai/summarize-notes', data),
   getSummaries: (beneficiaryId) => api.get(`/ai/summaries/${beneficiaryId}`),
+  // New AI endpoints
+  referralMatcher: (data) => api.post('/ai/referral-matcher', data),
+  caseloadAnalyzer: () => api.post('/ai/caseload-analyzer', {}),
+  progressReport: (data) => api.post('/ai/progress-report', data),
+};
+
+export const services = {
+  list: () => api.get('/services-directory'),
+  get: (id) => api.get(`/services-directory/${id}`),
+  create: (data) => api.post('/services-directory', data),
+  update: (id, data) => api.put(`/services-directory/${id}`, data),
+  delete: (id) => api.delete(`/services-directory/${id}`),
 };
 
 export const dashboard = {
