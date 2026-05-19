@@ -18,6 +18,7 @@ import Notifications from './pages/Notifications';
 import AISummaries from './pages/AISummaries';
 import AITools from './pages/AITools';
 import AINewTools from './pages/AINewTools';
+import CustomViewsPage from './pages/CustomViewsPage';
 import { notifications as notifApi } from './services/api';
 
 // // === Batch 02 Gaps & Frontend Mounts ===
@@ -66,6 +67,7 @@ function Layout({ children, user, onLogout }) {
     { path: '/ai-summaries', label: 'AI Summaries', icon: '🤖' },
     { path: '/ai-tools', label: 'AI Tools', icon: '⚙️' },
     { path: '/ai-new-tools', label: 'AI New Tools', icon: '✨' },
+    { path: '/custom-views', label: 'Case Views', icon: '🗂️' },
     { path: '/notifications', label: 'Notifications', icon: '🔔', badge: unreadCount },
   ];
 
@@ -229,6 +231,7 @@ function App() {
           <Route path="/ai-summaries" element={<AISummaries />} />
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/ai-new-tools" element={<AINewTools />} />
+          <Route path="/custom-views" element={<CustomViewsPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>

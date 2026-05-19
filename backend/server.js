@@ -54,6 +54,10 @@ app.use('/api/ai', require('./routes/riskEscalate'));
 app.use('/api/services-directory', require('./routes/servicesDirectory'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 
+// Custom Views: caseload-per-manager, case-stage heatmap, case-file PDF, workflow rules
+// Mounted BEFORE any 404 / catch-all handler.
+app.use('/api/custom-views', require('./routes/customViews'));
+
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
