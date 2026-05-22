@@ -19,6 +19,7 @@ import AISummaries from './pages/AISummaries';
 import AITools from './pages/AITools';
 import AINewTools from './pages/AINewTools';
 import CustomViewsPage from './pages/CustomViewsPage';
+import ConsentBenefitsRenewal from './pages/ConsentBenefitsRenewal';
 import { notifications as notifApi } from './services/api';
 
 // // === Batch 02 Gaps & Frontend Mounts ===
@@ -36,6 +37,11 @@ import GapNoFerpaHipaaComplianceTrackingModule from './pages/GapNoFerpaHipaaComp
 import GapLimitedMobileAppForFieldCaseManagers from './pages/GapLimitedMobileAppForFieldCaseManagers';
 import GapNoWebhooks from './pages/GapNoWebhooks';
 import GapNoCalendarIntegrationDespiteAppointments from './pages/GapNoCalendarIntegrationDespiteAppointments';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
+import TimelineView from './pages/TimelineView';
 
 function Layout({ children, user, onLogout }) {
   const location = useLocation();
@@ -68,6 +74,7 @@ function Layout({ children, user, onLogout }) {
     { path: '/ai-tools', label: 'AI Tools', icon: '⚙️' },
     { path: '/ai-new-tools', label: 'AI New Tools', icon: '✨' },
     { path: '/custom-views', label: 'Case Views', icon: '🗂️' },
+    { path: '/consent-benefits-renewal', label: 'Benefit Renewals', icon: '🧾' },
     { path: '/notifications', label: 'Notifications', icon: '🔔', badge: unreadCount },
   ];
 
@@ -188,6 +195,10 @@ function App() {
     return (
       <Router>
         <Routes>
+        <Route path="/insights/timeline" element={<TimelineView />} />
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
           <Route path="*" element={<Login onLogin={handleLogin} />} />
         
         {/* // === Batch 02 Gaps & Frontend Mounts === */}
@@ -232,6 +243,7 @@ function App() {
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/ai-new-tools" element={<AINewTools />} />
           <Route path="/custom-views" element={<CustomViewsPage />} />
+          <Route path="/consent-benefits-renewal" element={<ConsentBenefitsRenewal />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>

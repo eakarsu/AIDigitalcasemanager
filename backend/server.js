@@ -57,6 +57,7 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 // Custom Views: caseload-per-manager, case-stage heatmap, case-file PDF, workflow rules
 // Mounted BEFORE any 404 / catch-all handler.
 app.use('/api/custom-views', require('./routes/customViews'));
+app.use('/api/consent-benefits-renewal', require('./routes/consentBenefitsRenewal'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
