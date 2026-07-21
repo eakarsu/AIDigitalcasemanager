@@ -2,10 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 require('dotenv').config({ path: '../.env' });
-const { initDB } = require('./db');
 
 const app = express();
 const PORT = process.env.BACKEND_PORT || 3001;
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be configured with at least 32 characters');
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
@@ -58,39 +59,14 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 // Mounted BEFORE any 404 / catch-all handler.
 app.use('/api/custom-views', require('./routes/customViews'));
 app.use('/api/consent-benefits-renewal', require('./routes/consentBenefitsRenewal'));
+app.use('/api/matters', require('./routes/matters'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 const start = async () => {
   try {
-    await initDB();
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-beneficiaries-goals-referrals-lack-ai-endpoints-for-risk-pre', require('./routes/gap_beneficiaries_goals_referrals_lack_ai_endpoints_for_risk_pre'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-communications-lacks-generate-communication-plan', require('./routes/gap_communications_lacks_generate_communication_plan'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-servicesdirectory-lacks-ai-matching-eligibility-scoring', require('./routes/gap_servicesdirectory_lacks_ai_matching_eligibility_scoring'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-limited-integration-with-social-service-databases-only-stub', require('./routes/gap_limited_integration_with_social_service_databases_only_stub'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-automated-eligibility-determination-engine', require('./routes/gap_no_automated_eligibility_determination_engine'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-ferpa-hipaa-compliance-tracking-module', require('./routes/gap_no_ferpa_hipaa_compliance_tracking_module'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-limited-mobile-app-for-field-case-managers', require('./routes/gap_limited_mobile_app_for_field_case_managers'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-webhooks', require('./routes/gap_no_webhooks'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-calendar-integration-despite-appointments', require('./routes/gap_no_calendar_integration_despite_appointments'));
+    // Schema changes are explicit migrations. Generated gap routers remain quarantined.
 
     app.listen(PORT, () => {
       console.log(`✅ Backend server running on port ${PORT}`);
