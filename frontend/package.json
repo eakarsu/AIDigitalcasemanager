@@ -11,10 +11,9 @@
     "lucide-react": "^0.460.0"
   },
   "scripts": {
-    "start": "PORT=3800 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build"
   },
-  "proxy": "http://localhost:3801",
   "browserslist": {
     "production": [">0.2%", "not dead", "not op_mini all"],
     "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
