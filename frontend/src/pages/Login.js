@@ -25,8 +25,8 @@ export default function Login({ onLogin }) {
   };
 
   const handleQuickLogin = () => {
-    setEmail('admin@casemanager.org');
-    setPassword('password123');
+    setEmail(process.env.REACT_APP_DEMO_EMAIL || '');
+    setPassword(process.env.REACT_APP_DEMO_PASSWORD || '');
   };
 
   return (
