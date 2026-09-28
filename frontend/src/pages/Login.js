@@ -142,6 +142,7 @@ export default function Login({ onLogin }) {
 
           <button
             type="button"
+            aria-label="Auto Fill Demo Credentials"
             className="btn btn-outline"
             onClick={handleQuickLogin}
             style={{
@@ -150,7 +151,7 @@ export default function Login({ onLogin }) {
             }}
           >
             <span style={{ fontSize: '16px' }}>&#9889;</span>
-            Quick Login (Demo)
+            Auto Fill Demo Credentials
           </button>
         </form>
       </div>
