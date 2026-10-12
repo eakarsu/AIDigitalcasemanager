@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../services/api';
+import AIReport from '../components/AIReport';
 
 // Local AI helpers for the new endpoints (kept inline so we don't modify api.js).
 const aiNewApi = {
@@ -23,7 +24,6 @@ const textarea = { ...input, minHeight: 100, fontFamily: 'monospace', fontSize: 
 const errorBox = { background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: 12, borderRadius: 8, fontSize: 13, marginTop: 12 };
 
 const SAMPLE_PROFILE = `{
-  "beneficiary_id": 42,
   "age": 52,
   "diagnoses": ["depression", "hypertension"],
   "housing_status": "transitional",
@@ -110,7 +110,7 @@ export default function AINewTools() {
       const d = res.data;
       setOutput({
         title: `Risk Escalation Forecast (${d.horizon_days || h || 30}-day horizon)`,
-        body: typeof d.prediction === 'string' ? d.prediction : JSON.stringify(d.prediction, null, 2),
+        body: d.prediction ?? d,
         meta: d.ai_response,
       });
     } catch (e) {
@@ -140,7 +140,7 @@ export default function AINewTools() {
       const d = res.data;
       setOutput({
         title: 'Service Recommendations',
-        body: typeof d.recommendations === 'string' ? d.recommendations : JSON.stringify(d.recommendations, null, 2),
+        body: d.recommendations ?? d,
         meta: d.ai_response,
       });
     } catch (e) {
@@ -166,7 +166,7 @@ export default function AINewTools() {
       if (commConstraints.trim()) payload.constraints = commConstraints;
       const res = await aiNewApi.generateCommunicationPlan(payload);
       const d = res.data;
-      setOutput({ title: 'Communication Plan', body: typeof d.plan === 'string' ? d.plan : JSON.stringify(d.plan, null, 2), meta: d.ai_response });
+      setOutput({ title: 'Communication Plan', body: d.plan ?? d, meta: d.ai_response });
     } catch (e) { setError(handle503(e)); } finally { setLoading(false); }
   };
 
@@ -179,7 +179,7 @@ export default function AINewTools() {
       if (goalHistory.trim()) payload.history = tryParseJson(goalHistory);
       const res = await aiNewApi.predictGoalAchievement(payload);
       const d = res.data;
-      setOutput({ title: 'Goal Achievement Forecast', body: typeof d.prediction === 'string' ? d.prediction : JSON.stringify(d.prediction, null, 2), meta: d.ai_response });
+      setOutput({ title: 'Goal Achievement Forecast', body: d.prediction ?? d, meta: d.ai_response });
     } catch (e) { setError(handle503(e)); } finally { setLoading(false); }
   };
 
@@ -197,7 +197,7 @@ export default function AINewTools() {
       if (bnList.trim()) payload.beneficiaries = tryParseJson(bnList);
       const res = await aiNewApi.balanceCaseworkerWorkload(payload);
       const d = res.data;
-      setOutput({ title: 'Workload Rebalance Plan', body: typeof d.recommendations === 'string' ? d.recommendations : JSON.stringify(d.recommendations, null, 2), meta: d.ai_response });
+      setOutput({ title: 'Workload Rebalance Plan', body: d.recommendations ?? d, meta: d.ai_response });
     } catch (e) { setError(handle503(e)); } finally { setLoading(false); }
   };
 
@@ -212,7 +212,7 @@ export default function AINewTools() {
       const d = res.data;
       setOutput({
         title: 'Eligibility Determination (Advisory)',
-        body: typeof d.determination === 'string' ? d.determination : JSON.stringify(d.determination, null, 2),
+        body: d.determination ?? d,
         meta: d.ai_response,
       });
     } catch (e) { setError(handle503(e)); } finally { setLoading(false); }
@@ -228,7 +228,7 @@ export default function AINewTools() {
       const d = res.data;
       setOutput({
         title: `Compliance Check (${(d.frameworks || []).join(', ') || 'HIPAA, FERPA'})`,
-        body: typeof d.analysis === 'string' ? d.analysis : JSON.stringify(d.analysis, null, 2),
+        body: d.analysis ?? d,
         meta: d.ai_response,
       });
     } catch (e) { setError(handle503(e)); } finally { setLoading(false); }
@@ -239,7 +239,7 @@ export default function AINewTools() {
     setLoading(true); setError(null); setOutput({ title: '', body: '', meta: null });
     try {
       const res = await aiNewApi.notifySms({ to: smsTo, body: smsBody });
-      setOutput({ title: 'SMS Dispatch', body: JSON.stringify(res.data, null, 2), meta: null });
+      setOutput({ title: 'SMS Dispatch', body: res.data, meta: null });
     } catch (e) { setError(handle503(e)); } finally { setLoading(false); }
   };
 
@@ -248,7 +248,7 @@ export default function AINewTools() {
     setLoading(true); setError(null); setOutput({ title: '', body: '', meta: null });
     try {
       const res = await aiNewApi.notifyEmail({ to: emailTo, subject: emailSubject, body: emailBody });
-      setOutput({ title: 'Email Dispatch', body: JSON.stringify(res.data, null, 2), meta: null });
+      setOutput({ title: 'Email Dispatch', body: res.data, meta: null });
     } catch (e) { setError(handle503(e)); } finally { setLoading(false); }
   };
 
@@ -257,8 +257,28 @@ export default function AINewTools() {
     setLoading(true); setError(null); setOutput({ title: '', body: '', meta: null });
     try {
       const res = await aiNewApi.serviceDirectory211({ zip: zip211, category: category211 || undefined });
-      setOutput({ title: '211 Directory Lookup', body: JSON.stringify(res.data, null, 2), meta: null });
+      setOutput({ title: '211 Directory Lookup', body: res.data, meta: null });
     } catch (e) { setError(handle503(e)); } finally { setLoading(false); }
+  };
+
+  // Each scenario fills every editable field in the selected AI form. These are
+  // illustrative inputs only; they never claim to be database records.
+  const scenarios = [
+    { label: 'Housing support', profile: JSON.stringify({ age: 39, housing_status: 'temporary shelter', support_network: 'limited', recent_incidents: 1 }, null, 2), notes: JSON.stringify([{ note: 'Missed a housing intake appointment' }]), horizon: '30', needs: '["stable housing","transit assistance"]', catalog: JSON.stringify([{ name: 'Community housing intake', service_type: 'housing', eligibility: 'confirm locally' }]), context: 'Adult in temporary shelter; transportation is unreliable.', goal: 'Complete housing intake and submit two applications within 30 days.', goalHistory: JSON.stringify([{ milestone: 'Intake appointment missed; rescheduling needed' }]), workers: JSON.stringify([{ name: 'Housing specialist A', active_cases: 21, max_caseload: 25 }]), beneficiaries: JSON.stringify([{ name: 'Example client', risk_level: 'moderate', assigned_to: 'Housing specialist A' }]), jurisdiction: 'New York', zip: '10001' },
+    { label: 'Health follow-up', profile: JSON.stringify({ age: 52, housing_status: 'stable', support_network: 'family', recent_incidents: 0 }, null, 2), notes: JSON.stringify([{ note: 'Requested help scheduling a clinic visit' }]), horizon: '14', needs: '["clinic appointment","medication access"]', catalog: JSON.stringify([{ name: 'Community clinic', service_type: 'health', eligibility: 'confirm locally' }]), context: 'Adult with stable housing seeking a clinic appointment.', goal: 'Schedule a clinic visit and confirm transportation this month.', goalHistory: JSON.stringify([{ milestone: 'Requested clinic contact information' }]), workers: JSON.stringify([{ name: 'Health navigator B', active_cases: 18, max_caseload: 25 }]), beneficiaries: JSON.stringify([{ name: 'Example client', risk_level: 'low', assigned_to: 'Health navigator B' }]), jurisdiction: 'California', zip: '94110' },
+    { label: 'Food access', profile: JSON.stringify({ age: 61, housing_status: 'stable', support_network: 'limited', recent_incidents: 0 }, null, 2), notes: JSON.stringify([{ note: 'Reports difficulty reaching the food pantry' }]), horizon: '60', needs: '["food assistance","accessible transport"]', catalog: JSON.stringify([{ name: 'Neighborhood pantry', service_type: 'food', eligibility: 'confirm locally' }]), context: 'Older adult with limited transport seeking food support.', goal: 'Arrange a reliable food pickup or delivery plan within two weeks.', goalHistory: JSON.stringify([{ milestone: 'Pantry hours reviewed; transport unconfirmed' }]), workers: JSON.stringify([{ name: 'Benefits navigator C', active_cases: 16, max_caseload: 22 }]), beneficiaries: JSON.stringify([{ name: 'Example client', risk_level: 'moderate', assigned_to: 'Benefits navigator C' }]), jurisdiction: 'Massachusetts', zip: '02108' },
+  ];
+  const fillScenario = (sample) => {
+    const selected = {
+      'predict-risk-escalation': () => { setProfile(sample.profile); setNotesText(sample.notes); setHorizon(sample.horizon); },
+      'recommend-services': () => { setNeeds(sample.needs); setCatalog(sample.catalog); setContext(sample.context); },
+      'communication-plan': () => { setCommGoal(sample.goal); setCommAudience('Caseworkers and community partners'); setCommChannels('["phone_call","postal_mail"]'); setCommTone('Empathetic and clear'); setCommConstraints('Confirm consent and contact preferences before outreach.'); },
+      'goal-achievement': () => { setGoalText(sample.goal); setGoalContext(sample.profile); setGoalHistory(sample.goalHistory); },
+      'workload-balance': () => { setCwList(sample.workers); setBnList(sample.beneficiaries); },
+      'eligibility-determination': () => { setEligibilityProfile(sample.profile); setEligibilityPrograms('["SNAP","Medicaid"]'); setEligibilityJurisdiction(sample.jurisdiction); },
+      'compliance-check': () => { setComplianceWorkflow(`A caseworker coordinates ${sample.goal.toLowerCase()} with an outside provider. Review consent, minimum necessary access, retention, and secure delivery.`); setComplianceFrameworks('["HIPAA","FERPA"]'); },
+    }[tab];
+    selected?.(); setError(null); setOutput({ title: '', body: '', meta: null });
   };
 
   const tabs = [
@@ -301,6 +321,8 @@ export default function AINewTools() {
           </button>
         ))}
       </div>
+
+      {!tab.startsWith('notify-') && tab !== 'service-directory-211' && <div className="ai-preset-bar"><strong>Fill all fields with an example</strong><div className="ai-actions">{scenarios.map((sample) => <button key={sample.label} type="button" className="btn btn-secondary" disabled={loading} onClick={() => fillScenario(sample)}>{sample.label}</button>)}</div></div>}
 
       {tab === 'predict-risk-escalation' && (
         <div style={card}>
@@ -528,13 +550,13 @@ export default function AINewTools() {
         </div>
       )}
 
-      {output.body && !loading && (
+      {output.title && !loading && (
         <div style={card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700 }}>{output.title}</h3>
             {output.meta?.model && <span style={{ fontSize: 12, color: '#6b7280' }}>Model: {output.meta.model}</span>}
           </div>
-          <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5, margin: 0 }}>{output.body}</pre>
+          <AIReport response={output.body} title={output.title} model={output.meta?.model} />
         </div>
       )}
     </div>

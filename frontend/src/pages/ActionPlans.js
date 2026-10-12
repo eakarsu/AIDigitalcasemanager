@@ -1,3 +1,4 @@
+import AIReport from '../components/AIReport';
 import React, { useState, useEffect } from 'react';
 import { actionPlans, beneficiaries, caseworkers } from '../services/api';
 
@@ -363,7 +364,7 @@ export default function ActionPlans() {
                         lineHeight: 1.7,
                         fontSize: 14,
                       }}>
-                        {selected.plan_content}
+                        <AIReport response={selected.plan_content} title="Action plan" />
                       </div>
                     </div>
                   )}

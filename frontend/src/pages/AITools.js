@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ai, beneficiaries as benApi, services as servicesApi } from '../services/api';
+import AIReport from '../components/AIReport';
 
 const card = { background: 'white', borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' };
 const btn = { padding: '10px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', cursor: 'pointer', fontWeight: 600 };
@@ -34,7 +35,7 @@ export default function AITools() {
     try {
       const res = await fn();
       const d = res.data;
-      const text = d.recommendations || d.report || d.assessment || d.summary || JSON.stringify(d, null, 2);
+      const text = d.recommendations ?? d.report ?? d.assessment ?? d.summary ?? d;
       setOutput({ title, body: text, meta: d.ai_response });
     } catch (e) {
       setOutput({ title, body: e?.response?.data?.error || e.message || 'Error', meta: null });
@@ -66,6 +67,8 @@ export default function AITools() {
           {bens.map(b => <option key={b.id} value={b.id}>{b.first_name} {b.last_name} ({b.program || 'No program'})</option>)}
         </select>
       </div>
+
+      <div className="ai-preset-bar"><div><strong>Progress report examples</strong><p>Choose a real beneficiary above; these buttons fill both date fields only.</p></div><div className="ai-actions">{[30, 90, 180].map((days) => <button key={days} type="button" className="btn btn-secondary" onClick={() => { const today = new Date(); const from = new Date(today); from.setDate(today.getDate() - days); setStart(from.toISOString().slice(0, 10)); setEnd(today.toISOString().slice(0, 10)); }}>{days} days</button>)}</div></div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 24 }}>
         <div style={card}>
@@ -151,13 +154,13 @@ export default function AITools() {
         </div>
       )}
 
-      {output.body && (
+      {output.title && (
         <div style={card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700 }}>{output.title}</h3>
             {output.meta?.model && <span style={{ fontSize: 12, color: '#6b7280' }}>Model: {output.meta.model}</span>}
           </div>
-          <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5 }}>{output.body}</pre>
+          <AIReport response={output.body} title={output.title} model={output.meta?.model} />
         </div>
       )}
     </div>

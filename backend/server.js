@@ -64,6 +64,14 @@ app.use('/api/matters', require('./routes/matters'));
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
+
+// Advisory AI reports only; native execution and approval routes stay unchanged.
+const aiWorkspaceSupport = require("./aiWorkspaceAdapters.cjs");
+const aiWorkspaceDatabase = require("./db.js").pool;
+app.use('/api/report-workspace', require("./aiWorkspace.cjs").createAIWorkspaceRouter({
+  pool: aiWorkspaceDatabase, authenticateToken: require("./middleware/auth.js"),
+  aiRateLimiter: aiWorkspaceSupport.createWorkspaceLimiter(), features: require("./aiWorkspaceFeatures.json"),
+}));
 const start = async () => {
   try {
     // Schema changes are explicit migrations. Generated gap routers remain quarantined.

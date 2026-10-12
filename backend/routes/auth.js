@@ -4,9 +4,8 @@ const jwt = require('jsonwebtoken');
 const { query } = require('../db');
 require('dotenv').config({ path: '../../.env' });
 
-router.post('/login', async (req, res) => {
+const loginWithCredentials = async (email, password, res) => {
   try {
-    const { email, password } = req.body;
     const result = await query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
 
@@ -24,6 +23,17 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+};
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  await loginWithCredentials(email, password, res);
+});
+
+router.post('/demo-login', async (_req, res) => {
+  const { DEMO_EMAIL, DEMO_PASSWORD } = process.env;
+  if (!DEMO_EMAIL || !DEMO_PASSWORD) return res.status(503).json({ error: 'Demo account is not configured.' });
+  await loginWithCredentials(DEMO_EMAIL, DEMO_PASSWORD, res);
 });
 
 router.get('/me', require('../middleware/auth'), async (req, res) => {

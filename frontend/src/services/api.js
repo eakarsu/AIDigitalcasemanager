@@ -24,13 +24,23 @@ api.interceptors.response.use(
   }
 );
 
+// List screens consume Axios responses whose .data is an array. Some routes
+// paginate as { data: rows, pagination }, so unwrap only a valid row array.
+const listRows = (request) => request.then((response) => {
+  const payload = response.data;
+  const rows = Array.isArray(payload) ? payload : payload?.data;
+  if (!Array.isArray(rows)) throw new TypeError('List API returned no row array');
+  return { ...response, data: rows, pagination: payload?.pagination };
+});
+
 export const auth = {
   login: (data) => api.post('/auth/login', data),
+  demoLogin: () => api.post('/auth/demo-login'),
   me: () => api.get('/auth/me'),
 };
 
 export const beneficiaries = {
-  list: () => api.get('/beneficiaries'),
+  list: () => listRows(api.get('/beneficiaries')),
   get: (id) => api.get(`/beneficiaries/${id}`),
   create: (data) => api.post('/beneficiaries', data),
   update: (id, data) => api.put(`/beneficiaries/${id}`, data),
@@ -38,7 +48,7 @@ export const beneficiaries = {
 };
 
 export const caseworkers = {
-  list: () => api.get('/caseworkers'),
+  list: () => listRows(api.get('/caseworkers')),
   get: (id) => api.get(`/caseworkers/${id}`),
   create: (data) => api.post('/caseworkers', data),
   update: (id, data) => api.put(`/caseworkers/${id}`, data),
@@ -46,7 +56,7 @@ export const caseworkers = {
 };
 
 export const notes = {
-  list: (beneficiaryId) => api.get('/notes', { params: { beneficiary_id: beneficiaryId } }),
+  list: (beneficiaryId) => listRows(api.get('/notes', { params: { beneficiary_id: beneficiaryId } })),
   get: (id) => api.get(`/notes/${id}`),
   create: (data) => api.post('/notes', data),
   update: (id, data) => api.put(`/notes/${id}`, data),
@@ -54,7 +64,7 @@ export const notes = {
 };
 
 export const actionPlans = {
-  list: (beneficiaryId) => api.get('/action-plans', { params: { beneficiary_id: beneficiaryId } }),
+  list: (beneficiaryId) => listRows(api.get('/action-plans', { params: { beneficiary_id: beneficiaryId } })),
   get: (id) => api.get(`/action-plans/${id}`),
   create: (data) => api.post('/action-plans', data),
   update: (id, data) => api.put(`/action-plans/${id}`, data),
@@ -63,7 +73,7 @@ export const actionPlans = {
 };
 
 export const tasks = {
-  list: (params) => api.get('/tasks', { params }),
+  list: (params) => listRows(api.get('/tasks', { params })),
   get: (id) => api.get(`/tasks/${id}`),
   create: (data) => api.post('/tasks', data),
   update: (id, data) => api.put(`/tasks/${id}`, data),
@@ -71,7 +81,7 @@ export const tasks = {
 };
 
 export const appointments = {
-  list: (beneficiaryId) => api.get('/appointments', { params: { beneficiary_id: beneficiaryId } }),
+  list: (beneficiaryId) => listRows(api.get('/appointments', { params: { beneficiary_id: beneficiaryId } })),
   get: (id) => api.get(`/appointments/${id}`),
   create: (data) => api.post('/appointments', data),
   update: (id, data) => api.put(`/appointments/${id}`, data),
@@ -79,7 +89,7 @@ export const appointments = {
 };
 
 export const documents = {
-  list: (beneficiaryId) => api.get('/documents', { params: { beneficiary_id: beneficiaryId } }),
+  list: (beneficiaryId) => listRows(api.get('/documents', { params: { beneficiary_id: beneficiaryId } })),
   get: (id) => api.get(`/documents/${id}`),
   create: (data) => api.post('/documents', data),
   update: (id, data) => api.put(`/documents/${id}`, data),
@@ -87,7 +97,7 @@ export const documents = {
 };
 
 export const referrals = {
-  list: (beneficiaryId) => api.get('/referrals', { params: { beneficiary_id: beneficiaryId } }),
+  list: (beneficiaryId) => listRows(api.get('/referrals', { params: { beneficiary_id: beneficiaryId } })),
   get: (id) => api.get(`/referrals/${id}`),
   create: (data) => api.post('/referrals', data),
   update: (id, data) => api.put(`/referrals/${id}`, data),
@@ -95,7 +105,7 @@ export const referrals = {
 };
 
 export const goals = {
-  list: (beneficiaryId) => api.get('/goals', { params: { beneficiary_id: beneficiaryId } }),
+  list: (beneficiaryId) => listRows(api.get('/goals', { params: { beneficiary_id: beneficiaryId } })),
   get: (id) => api.get(`/goals/${id}`),
   create: (data) => api.post('/goals', data),
   update: (id, data) => api.put(`/goals/${id}`, data),
@@ -103,7 +113,7 @@ export const goals = {
 };
 
 export const assessments = {
-  list: (beneficiaryId) => api.get('/assessments', { params: { beneficiary_id: beneficiaryId } }),
+  list: (beneficiaryId) => listRows(api.get('/assessments', { params: { beneficiary_id: beneficiaryId } })),
   get: (id) => api.get(`/assessments/${id}`),
   create: (data) => api.post('/assessments', data),
   update: (id, data) => api.put(`/assessments/${id}`, data),
@@ -111,7 +121,7 @@ export const assessments = {
 };
 
 export const communications = {
-  list: (beneficiaryId) => api.get('/communications', { params: { beneficiary_id: beneficiaryId } }),
+  list: (beneficiaryId) => listRows(api.get('/communications', { params: { beneficiary_id: beneficiaryId } })),
   get: (id) => api.get(`/communications/${id}`),
   create: (data) => api.post('/communications', data),
   update: (id, data) => api.put(`/communications/${id}`, data),
@@ -119,7 +129,7 @@ export const communications = {
 };
 
 export const notifications = {
-  list: () => api.get('/notifications'),
+  list: () => listRows(api.get('/notifications')),
   unreadCount: () => api.get('/notifications/unread-count'),
   markRead: (id) => api.put(`/notifications/${id}/read`),
   markAllRead: () => api.put('/notifications/read-all'),
@@ -139,7 +149,7 @@ export const ai = {
 };
 
 export const services = {
-  list: () => api.get('/services-directory'),
+  list: () => listRows(api.get('/services-directory')),
   get: (id) => api.get(`/services-directory/${id}`),
   create: (data) => api.post('/services-directory', data),
   update: (id, data) => api.put(`/services-directory/${id}`, data),

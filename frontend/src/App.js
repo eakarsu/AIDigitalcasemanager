@@ -1,3 +1,4 @@
+import AIReportLibrary from "./components/AIReportLibrary";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
@@ -130,7 +131,7 @@ function Layout({ children, user, onLogout }) {
             {sidebarOpen ? '◀' : '▶'}
           </button>
         </div>
-      </aside>
+      <AIReportLibrary /></aside>
 
       <div style={{ flex: 1, marginLeft: sidebarOpen ? 260 : 70, transition: 'margin-left 0.3s ease' }}>
         <header style={{

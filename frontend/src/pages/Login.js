@@ -7,16 +7,19 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const finishLogin = ({ user, token }) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    onLogin(user, token);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
       const res = await auth.login({ email, password });
-      const { user, token } = res.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      onLogin(user, token);
+      finishLogin(res.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
     } finally {
@@ -24,9 +27,17 @@ export default function Login({ onLogin }) {
     }
   };
 
-  const handleQuickLogin = () => {
-    setEmail(process.env.REACT_APP_DEMO_EMAIL || '');
-    setPassword(process.env.REACT_APP_DEMO_PASSWORD || '');
+  const handleQuickLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await auth.demoLogin();
+      finishLogin(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Demo login is unavailable. Ask an administrator for access.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -142,16 +153,17 @@ export default function Login({ onLogin }) {
 
           <button
             type="button"
-            aria-label="Auto Fill Demo Credentials"
+            aria-label="Log in with demo account"
             className="btn btn-outline"
             onClick={handleQuickLogin}
+            disabled={loading}
             style={{
               width: '100%', justifyContent: 'center', padding: '10px',
               fontSize: '13px', color: '#6b7280',
             }}
           >
             <span style={{ fontSize: '16px' }}>&#9889;</span>
-            Auto Fill Demo Credentials
+            Log in with demo account
           </button>
         </form>
       </div>

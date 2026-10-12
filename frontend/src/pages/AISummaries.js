@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ai, beneficiaries } from '../services/api';
+import AIReport from '../components/AIReport';
 
 const summaryTypeBadgeColors = {
   case_summary: '#2563eb',
@@ -216,13 +217,7 @@ export default function AISummaries() {
             <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>AI Generated Result</h3>
           </div>
           <div className="card-body" style={{ padding: 20 }}>
-            <div className="ai-output" style={{
-              padding: 20, background: 'var(--bg-secondary, #f9fafb)',
-              borderRadius: 8, lineHeight: 1.7, whiteSpace: 'pre-wrap',
-              fontSize: 14, border: '1px solid var(--border-color, #e5e7eb)',
-            }}>
-              {aiResult.content || aiResult.summary || aiResult.plan || aiResult.assessment || JSON.stringify(aiResult, null, 2)}
-            </div>
+            <AIReport response={aiResult} title="Generated insight" />
             {(aiResult.model || aiResult.usage) && (
               <div className="ai-meta" style={{
                 marginTop: 12, padding: '10px 16px', background: '#f0f0ff',
@@ -312,12 +307,7 @@ export default function AISummaries() {
                     </div>
                     {isExpanded && (
                       <div className="card-body" style={{ padding: 20 }}>
-                        <div className="ai-output" style={{
-                          padding: 16, background: 'var(--bg-secondary, #f9fafb)',
-                          borderRadius: 8, lineHeight: 1.7, whiteSpace: 'pre-wrap', fontSize: 14,
-                        }}>
-                          {content || 'No content available.'}
-                        </div>
+                        <AIReport response={content} title={summaryTypeLabels[sType] || 'Saved summary'} model={s.ai_model || s.model} />
                         {(s.model || s.usage) && (
                           <div className="ai-meta" style={{
                             marginTop: 10, padding: '8px 14px', background: '#f0f0ff',

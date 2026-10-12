@@ -1,3 +1,4 @@
+import AIReport from '../components/AIReport';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { beneficiaries, notes, actionPlans, tasks, goals, assessments, ai, caseworkers } from '../services/api';
@@ -541,9 +542,7 @@ export default function BeneficiaryDetail() {
           {aiResult && !aiLoading && (
             <div className="card">
               <div className="card-body">
-                <div className="ai-output">
-                  {aiResult.content || aiResult.summary || aiResult.plan || aiResult.assessment || aiResult.result || JSON.stringify(aiResult, null, 2)}
-                </div>
+                <AIReport response={aiResult} title="Generated insight" />
                 <div className="ai-meta">
                   {aiResult.model && (
                     <span>Model: {aiResult.model}</span>
