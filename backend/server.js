@@ -59,6 +59,7 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 // Mounted BEFORE any 404 / catch-all handler.
 app.use('/api/custom-views', require('./routes/customViews'));
 app.use('/api/consent-benefits-renewal', require('./routes/consentBenefitsRenewal'));
+app.use('/api/feature-pack', require('./routes/featurePack').createFeaturePackRouter({ queryFn:(t,p)=>require('./db').query(t,p), authenticate:require('./middleware/auth'), table:'beneficiaries' }));
 app.use('/api/matters', require('./routes/matters'));
 
 // Health check
